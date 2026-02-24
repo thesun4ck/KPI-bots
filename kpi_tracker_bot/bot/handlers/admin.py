@@ -10,7 +10,7 @@ import shutil
 from datetime import date
 import pandas as pd
 from functools import wraps
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from config import ADMIN_IDS, DATABASE_PATH
 from bot.keyboards.admin_menu import get_admin_menu, get_system_menu, get_users_pagination
@@ -107,6 +107,10 @@ async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Всего записей в базе: {stats['records_total']}"
     )
 
+    back_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Назад", callback_data="admin_back")]
+    ])
+
     # строим графит роста "пользователи по дням"
     growth_data = await get_users_growth()
     if growth_data:
@@ -114,14 +118,14 @@ async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         counts = [r["cnt"] for r in growth_data]
         chart_buf = await admin_users_growth_chart(dates, counts)
 
-        # отправляем картинку с текстом поверх
         await context.bot.send_photo(
             chat_id=query.message.chat_id,
             photo=chart_buf,
-            caption=text
+            caption=text,
+            reply_markup=back_keyboard
         )
     else:
-        await query.message.reply_text(text)
+        await query.message.reply_text(text, reply_markup=back_keyboard)
 
 
 # открывает системное меню (бэкапы, логи)
@@ -205,11 +209,13 @@ async def admin_logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         metric_info = log.get("metric_label", "Unknown")
         text += f"[{log['sent_at']}]\nЮзер: {user_info}\nМетрика: {metric_info}\nТип: {log['alert_type']}\n---\n"
 
-    # Telegram режет длинные сообщения, берём только первые 4000 символов
     if len(text) > 4000:
         text = text[:4000] + "\n...обрезано"
 
-    await query.message.reply_text(text)
+    back_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Назад", callback_data="admin_back")]
+    ])
+    await query.message.reply_text(text, reply_markup=back_keyboard)
 
 
 # возврат в главное меню админки

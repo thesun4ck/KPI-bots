@@ -55,7 +55,11 @@ async def edit_business_name_finish(update: Update, context: ContextTypes.DEFAUL
     user = await get_user_by_telegram_id(update.effective_user.id)
 
     await update_business_name(user["id"], new_name)
-    await update.message.reply_text(f"✅ Название изменено на «{new_name}»")
+    from bot.keyboards.settings_menu import get_settings_menu
+    await update.message.reply_text(
+        f"✅ Название изменено на «{new_name}»",
+        reply_markup=get_settings_menu()
+    )
     return ConversationHandler.END
 
 
@@ -111,11 +115,15 @@ async def add_metric_finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
     label = context.user_data["new_metric_name"]
     user = await get_user_by_telegram_id(update.effective_user.id)
 
-    # системное имя метрики делаем английским по-простому
     sys_name = "custom_" + str(len(label))
 
     await create_metric(user["id"], sys_name, label, unit)
-    await update.message.reply_text(f"✅ Добавлена метрика «{label}» ({unit})")
+    from bot.keyboards.settings_menu import get_metrics_menu
+    metrics = await get_user_metrics(user["id"])
+    await update.message.reply_text(
+        f"✅ Добавлена метрика «{label}» ({unit})",
+        reply_markup=get_metrics_menu(metrics)
+    )
     context.user_data.clear()
     return ConversationHandler.END
 
@@ -138,7 +146,13 @@ async def edit_metric_finish(update: Update, context: ContextTypes.DEFAULT_TYPE)
     metric_id = context.user_data["edit_metric_id"]
 
     await update_metric(metric_id, label, unit)
-    await update.message.reply_text(f"✅ Метрика обновлена: «{label}» ({unit})")
+    from bot.keyboards.settings_menu import get_metrics_menu
+    user = await get_user_by_telegram_id(update.effective_user.id)
+    metrics = await get_user_metrics(user["id"])
+    await update.message.reply_text(
+        f"✅ Метрика обновлена: «{label}» ({unit})",
+        reply_markup=get_metrics_menu(metrics)
+    )
     context.user_data.clear()
     return ConversationHandler.END
 
@@ -193,7 +207,12 @@ async def enter_goal_value_finish(update: Update, context: ContextTypes.DEFAULT_
 
     await set_goal(user["id"], metric_id, val, period)
     period_str = "неделю" if period == "week" else "месяц"
-    await update.message.reply_text(f"🎯 Отлично! Цель на {period_str} сохранена.")
+    from bot.keyboards.settings_menu import get_goals_metrics_menu
+    metrics = await get_user_metrics(user["id"])
+    await update.message.reply_text(
+        f"🎯 Отлично! Цель на {period_str} сохранена.",
+        reply_markup=get_goals_metrics_menu(metrics)
+    )
     context.user_data.clear()
     return ConversationHandler.END
 
@@ -221,10 +240,13 @@ async def edit_reminder_finish(update: Update, context: ContextTypes.DEFAULT_TYP
     user = await get_user_by_telegram_id(update.effective_user.id)
     await update_reminder_time(user["id"], validated_time)
 
-    # обновляем задачу в планировщике, чтобы напоминание приходило в новое время
     add_user_job(context.application, user["id"], update.effective_user.id, validated_time)
 
-    await update.message.reply_text(f"✅ Время обновлено! Буду напоминать в {validated_time}.")
+    from bot.keyboards.settings_menu import get_settings_menu
+    await update.message.reply_text(
+        f"✅ Время обновлено! Буду напоминать в {validated_time}.",
+        reply_markup=get_settings_menu()
+    )
     return ConversationHandler.END
 
 

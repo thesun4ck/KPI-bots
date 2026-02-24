@@ -21,7 +21,8 @@ from bot.handlers.start import get_start_handler
 from bot.handlers.daily_input import get_daily_input_handler, dismiss_report
 from bot.handlers.reports import (
     show_report_menu, report_week, report_month, report_csv,
-    show_alert_chart, show_report_after_input
+    show_alert_chart, show_report_after_input,
+    report_back, report_back_to_menu
 )
 from bot.handlers.settings import (
     show_settings, show_metrics, view_metric,
@@ -138,6 +139,8 @@ def main():
     application.add_handler(CallbackQueryHandler(report_week, pattern="^report_week$"))
     application.add_handler(CallbackQueryHandler(report_month, pattern="^report_month$"))
     application.add_handler(CallbackQueryHandler(report_csv, pattern="^report_csv$"))
+    application.add_handler(CallbackQueryHandler(report_back, pattern="^report_back$"))
+    application.add_handler(CallbackQueryHandler(report_back_to_menu, pattern="^report_back_to_menu$"))
     application.add_handler(CallbackQueryHandler(show_report_after_input, pattern="^show_report_week$"))
     application.add_handler(CallbackQueryHandler(dismiss_report, pattern="^dismiss_report$"))
     application.add_handler(CallbackQueryHandler(show_alert_chart, pattern=r"^alert_chart_\d+$"))

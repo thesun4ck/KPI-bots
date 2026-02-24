@@ -20,8 +20,15 @@ async def show_report_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📅 За неделю", callback_data="report_week")],
         [InlineKeyboardButton("📆 За месяц", callback_data="report_month")],
         [InlineKeyboardButton("📥 Выгрузить в CSV", callback_data="report_csv")],
+        [InlineKeyboardButton("🔙 Назад", callback_data="report_back")],
     ])
     await update.message.reply_text("Какой отчёт подготовить?", reply_markup=keyboard)
+
+
+# возврат из меню отчётов — просто удаляем сообщение
+async def report_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+    await update.callback_query.message.delete()
 
 
 # генерирует отчёт за последние 7 дней с графиками
@@ -86,15 +93,20 @@ async def report_week(update: Update, context: ContextTypes.DEFAULT_TYPE):
             values = [r["value"] for r in records]
             chart_buf = await revenue_line_chart(dates, values, f"Динамика: {first_metric_name}")
 
+    back_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 К отчётам", callback_data="report_back_to_menu")]
+    ])
+
     # отправляем сообщение: если есть график — отправляем фотку + текст
     if chart_buf:
         await context.bot.send_photo(
             chat_id=query.message.chat_id,
             photo=chart_buf,
-            caption=report_text
+            caption=report_text,
+            reply_markup=back_keyboard
         )
     else:
-        await query.message.reply_text(report_text)
+        await query.message.reply_text(report_text, reply_markup=back_keyboard)
 
 
 # отправляет отчёт (коллбэк от кнопки после ввода данных)
@@ -150,10 +162,14 @@ async def report_month(update: Update, context: ContextTypes.DEFAULT_TYPE):
             values = [r["value"] for r in records]
             chart_buf = await revenue_line_chart(dates, values, f"Месяц: {first_metric_name}")
 
+    back_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 К отчётам", callback_data="report_back_to_menu")]
+    ])
+
     if chart_buf:
-        await context.bot.send_photo(chat_id=query.message.chat_id, photo=chart_buf, caption=report_text)
+        await context.bot.send_photo(chat_id=query.message.chat_id, photo=chart_buf, caption=report_text, reply_markup=back_keyboard)
     else:
-        await query.message.reply_text(report_text)
+        await query.message.reply_text(report_text, reply_markup=back_keyboard)
 
 
 # экспортирует все записи пользователя в CSV файл
@@ -177,15 +193,31 @@ async def report_csv(update: Update, context: ContextTypes.DEFAULT_TYPE):
             writer.writerow([r['date'], r['metric_label'], r['value'], r['unit']])
 
     # отправляем файл пользователю
+    back_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 К отчётам", callback_data="report_back_to_menu")]
+    ])
     with open(filename, 'rb') as f:
         await context.bot.send_document(
             chat_id=query.message.chat_id,
             document=f,
-            filename=f"kpi_data_{date.today().isoformat()}.csv"
+            filename=f"kpi_data_{date.today().isoformat()}.csv",
+            reply_markup=back_keyboard
         )
 
     # удаляем временный файл с диска
     os.remove(filename)
+
+
+# возврат к меню отчётов
+async def report_back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📅 За неделю", callback_data="report_week")],
+        [InlineKeyboardButton("📆 За месяц", callback_data="report_month")],
+        [InlineKeyboardButton("📥 Выгрузить в CSV", callback_data="report_csv")],
+        [InlineKeyboardButton("🔙 Назад", callback_data="report_back")],
+    ])
+    await update.callback_query.message.reply_text("Какой отчёт подготовить?", reply_markup=keyboard)
 
 
 # строит график сравнения для алерта, когда пользователь нажимает "Посмотреть динамику"
