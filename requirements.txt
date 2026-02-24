@@ -1,9 +1,9 @@
 python-telegram-bot==20.7
-aiosqlite==0.20.0
-pandas==2.2.2
-numpy==2.0.0
-matplotlib==3.9.2
-seaborn==0.13.2
+aiosqlite
+pandas
+numpy
+matplotlib
+seaborn
 APScheduler==3.10.4
-python-dotenv==1.0.1
-openpyxl==3.1.5
+python-dotenv
+openpyxl
