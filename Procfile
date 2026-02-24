@@ -1,0 +1,1 @@
+worker: python kpi_tracker_bot/bot/main.py

@@ -1,0 +1,9 @@
+python-telegram-bot==20.7
+aiosqlite
+pandas
+numpy
+matplotlib
+seaborn
+APScheduler
+python-dotenv
+openpyxl
