@@ -158,10 +158,12 @@ async def admin_backup(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_document(
                 chat_id=query.message.chat_id,
                 document=f,
-                filename=f"kpi_backup_{date.today().isoformat()}.sqlite"
+                filename=f"kpi_backup_{date.today().isoformat()}.sqlite",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Назад", callback_data="admin_back")]
+                ])
             )
     finally:
-        # удаляем временный бэкап с диска после отправки
         if os.path.exists(backup_path):
             os.remove(backup_path)
 
@@ -187,7 +189,10 @@ async def admin_excel_export(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await context.bot.send_document(
         chat_id=query.message.chat_id,
         document=output,
-        filename=f"kpi_full_export_{date.today().isoformat()}.xlsx"
+        filename=f"kpi_full_export_{date.today().isoformat()}.xlsx",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Назад", callback_data="admin_back")]
+        ])
     )
 
 

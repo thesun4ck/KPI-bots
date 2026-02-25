@@ -253,5 +253,8 @@ async def show_alert_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_photo(
             chat_id=query.message.chat_id,
             photo=chart_buf,
-            caption="Вот как выглядят данные за последние 2 недели. Спад видно на графике."
+            caption="Вот как выглядят данные за последние 2 недели. Спад видно на графике.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 К отчётам", callback_data="report_back_to_menu")]
+            ])
         )

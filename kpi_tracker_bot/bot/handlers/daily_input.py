@@ -166,20 +166,24 @@ async def handle_force_update(update: Update, context: ContextTypes.DEFAULT_TYPE
 # если пользователь нажал "Нет" при вопросе об обновлении
 async def handle_cancel_daily(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
+    from bot.keyboards.main_menu import get_main_menu
     await update.callback_query.message.edit_text("Понял, оставляем всё как есть.")
+    await update.callback_query.message.reply_text("Главное меню:", reply_markup=get_main_menu())
     return ConversationHandler.END
 
 
 # если пользователь ввёл команду отмены в процессе
 async def cancel_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    await update.message.reply_text("Ввод данных отменён.")
+    from bot.keyboards.main_menu import get_main_menu
+    await update.message.reply_text("Ввод данных отменён.", reply_markup=get_main_menu())
     return ConversationHandler.END
 
 
 # если пользователь нажал "Не сейчас" в конце ввода
 async def dismiss_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
+    from bot.keyboards.main_menu import get_main_menu
     await update.callback_query.message.edit_text(
         update.callback_query.message.text + "\n\nОтчёт можно посмотреть в меню «📈 Мой отчёт»."
     )

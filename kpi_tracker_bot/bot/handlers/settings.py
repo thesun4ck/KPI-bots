@@ -33,8 +33,9 @@ async def show_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Возврат на предыдущие меню в настройках
 async def settings_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
-    # просто удаляем предыдущее сообщение (если нельзя вернуться кнопкой)
+    from bot.keyboards.main_menu import get_main_menu
     await update.callback_query.message.delete()
+    await update.callback_query.message.reply_text("Главное меню:", reply_markup=get_main_menu())
 
 async def settings_back_main(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await show_settings(update, context)
@@ -253,7 +254,8 @@ async def edit_reminder_finish(update: Update, context: ContextTypes.DEFAULT_TYP
 # универсальная отмена любого диалога настроек
 async def cancel_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    await update.message.reply_text("Отменено.")
+    from bot.keyboards.main_menu import get_main_menu
+    await update.message.reply_text("Отменено.", reply_markup=get_main_menu())
     return ConversationHandler.END
 
 
